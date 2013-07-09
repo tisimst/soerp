@@ -4,7 +4,7 @@ with open('README.txt') as file:
     long_description = file.read()
 
 setup(name='soerp',
-    version='0.8.1',
+    version='0.8.2',
     author='Abraham Lee',
     description='Second Order ERror Propagation',
     author_email='tisimst@gmail.com',
