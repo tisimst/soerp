@@ -310,8 +310,8 @@ class UncertainFunction(ADF):
                     print '{:} = {:} or {:%}'.format(v,error_wrt_var[v],
                         np.abs(error_wrt_var[v]/vz[2]))
                 print ' ' # one more for good measure
-            
-            return error_wrt_var
+            else:
+                return error_wrt_var
         else:
             """
             This section returns the full quadratic contributions as they appear
@@ -353,7 +353,8 @@ class UncertainFunction(ADF):
                                 print '({:}, {:}) = {:} or {:%}'.format(v1,v2,
                                     0.0,0.0)
                 print ' ' # one more for good measure
-            return (vc_lc,vc_qc,vc_cp)
+            else:
+                return (vc_lc,vc_qc,vc_cp)
     
     def __add__(self,val):
         return _make_UF_compatible_object(ADF.__add__(self,val))

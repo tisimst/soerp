@@ -28,25 +28,25 @@ Basic examples
 
     >>> Z = (x1*x2**2)/(15*(1.5 + x3))
     >>> Z  # output compactly shows the mean, variance, and standardized skewness and kurtosis
-    UF(1176.45, 99699.6822919, 0.708013052954, 6.16324345122)
+    uv(1176.45, 99699.682291666657, 0.70801305294370709, 6.1370133446354318)
 
-    >>> print Z  # explicitly calling print shows more detailed output
-    UncertainFunction:
+    >>> Z.describe  # use for more detailed output
+    SOERP Uncertain Value:
      > Mean...................  1176.45
      > Variance...............  99699.6822917
      > Skewness Coefficient...  0.708013052944
-     > Kurtosis Coefficient...  6.16328545042
+     > Kurtosis Coefficient...  6.13701334464
         
     >>> import scipy.stats as ss   # using empirically defined distribution objects
     >>> x1 = uv(rv=ss.norm(loc=24, scale=1))  # normally distributed
     >>> x2 = uv(rv=ss.norm(loc=37, scale=4))  # normally distributed
     >>> x3 = uv(rv=ss.expon(scale=0.5))  # exponentially distributed
     
-    >>> x1.moments  # the eight moments can be accessed at any time
+    >>> x1.moments()  # the eight moments can be accessed at any time
     [24.0, 1.0, 0.0, 3.0000000000000053, 0.0, 15.000000000000004, 0.0, 105.0]
     
     >>> x1-x1  # correlations are correctly handled
-    UF(0.0, 0.0, 0.0, 0.0)
+    0.0
     
     # convenient access to derivatives
     >>> Z.d(x1)  # first derivative wrt x1 (returns all if no input, 0 if derivative doesn't exist)
@@ -65,16 +65,13 @@ Basic examples
     [[0.0, 2.466666666666667, -22.816666666666666], [2.466666666666667, 1.6, -29.6], [-22.816666666666666, -29.6, 547.6]]
 
     >>> Z.error_components(pprint=True)  # show how each variable is contributing errors
-    *****************************************************************
     COMPOSITE VARIABLE ERROR COMPONENTS
-    norm(24.0, 1.0, 0.0, 3.0) = 2196.15170139 or 2.202767%
-    norm(37.0, 16.0, 0.0, 3.0) = 58202.9155556 or 58.378236%
-    expon(0.5, 0.25, 2.0, 9.0) = -35665.8249653 or 35.773258%
-    
-    # a more advanced example
+    uv(37.0, 16.0, 0.0, 3.0) = 58202.9155556 or 58.378236%
+    uv(24.0, 1.0, 0.0, 3.0) = 2196.15170139 or 2.202767%
+    uv(0.5, 0.25, 2.0, 9.0) = -35665.8249653 or 35.773258%
+
+    # a more advanced example (volumetric gas flow through orifice meter)
     >>> from soerp.umath import *  # sin, exp, sqrt, etc.
-    >>> print '*'*80
-    >>> print 'Example of volumetric gas flow through orifice meter'
     >>> H = uv(rv=ss.norm(loc=64, scale=0.5))
     >>> M = uv(rv=ss.norm(loc=16, scale=0.1))
     >>> P = uv(rv=ss.norm(loc=361, scale=2))
@@ -82,12 +79,12 @@ Basic examples
     >>> C = 38.4
     >>> Q = C*umath.sqrt((520*H*P)/(M*(t + 460)))
     
-    >>> print Q
-    UncertainFunction:
+    >>> Q.describe
+    SOERP Uncertain Value:
      > Mean...................  1330.99973939
      > Variance...............  58.210762839
      > Skewness Coefficient...  0.0109422068056
-     > Kurtosis Coefficient...  3.00032692988
+     > Kurtosis Coefficient...  3.0003269571
     
 Main Features
 =============

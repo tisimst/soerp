@@ -1,6 +1,9 @@
 soerp-0.8.2
 ===========
 
+- Modified 'error_components' method so that if 'pprint=True', nothing is 
+  returned.
+
 - Added pickling functionality (an object's before and after counterparts are
   not yet correlated, but objects unpickled together maintain prior 
   correlations)
