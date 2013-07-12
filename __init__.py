@@ -23,13 +23,31 @@ from ad import ADF,ADV
 from method_of_moments import soerp_numeric
 from method_of_moments import variance_components
 from method_of_moments import variance_contrib
+import scipy.stats as ss
 
-__version_info__ = (0, 8, 2)
+__version_info__ = (0, 9)
 __version__ = '.'.join(map(str, __version_info__))
 
 __author__ = 'Abraham Lee'
 
-__all__ = ['uv','covariance_matrix','correlation_matrix']
+__all__ = [
+    # the core functions
+    'uv',
+    'covariance_matrix',
+    'correlation_matrix',
+    # continuous distribution constructors
+    'N',
+    'U',
+    'Exp',
+    'Gamma',
+    'Beta',
+    'LogN',
+    'X2',
+    'F',
+    'Tri',
+    'T',
+    'Weib',
+    ]
 
 CONSTANT_TYPES = (float,int,complex,long,np.number)
 
@@ -154,7 +172,7 @@ class UncertainFunction(ADF):
         return self._to_general_representation(str)
 
     def __repr__(self):
-        return self._to_general_representation(repr)
+        return str(self)
 
     def describe(self):
         """
@@ -560,28 +578,76 @@ class UncertainVariable(UncertainFunction, ADV):
     misleading if the supplied moments or distribution is not accurately 
     defined. Here are some guidelines for creating UncertainVariable objects 
     using some of the most common statistical distributions:
-        
-    =========================  ===========  ==================  =====  =========
-    Distribution               scipy.stats  args                loc    scale
-                               class name   (shape parameters)
-    =========================  ===========  ==================  =====  =========
-    Normal(mu,sigma)           norm                             mu     sigma
-    Uniform(a,b)               uniform                          a      b-a
-    Exponential(lambda)        expon                                   1/lambda
-    Gamma(k,theta)             gamma        k                          theta
-    Beta(alpha,beta,[a,b])     beta         alpha,beta          a      b-a
-    Log-Normal(mu,sigma)       lognorm      sigma               mu
-    Chi-Square(dv)             chi2         dv
-    F(df_numer,df_denom)       f            df_numer,df_denom
-    Triangular(a,b,peak)       triang       peak                a      b-a
-    Student-T(df)              t            df
-    =========================  ===========  ==================  =====  =========
+    
+    +---------------------------+-------------+-------------------+-----+---------+
+    | Distribution              | scipy.stats |  args             | loc | scale   |
+    |                           | class name  | (shape params)    |     |         |
+    +===========================+=============+===================+=====+=========+
+    | Normal(mu, sigma)         | norm        |                   | mu  | sigma   | 
+    +---------------------------+-------------+-------------------+-----+---------+
+    | Uniform(a, b)             | uniform     |                   | a   | b-a     |
+    +---------------------------+-------------+-------------------+-----+---------+
+    | Exponential(lamda)        | expon       |                   |     | 1/lamda |
+    +---------------------------+-------------+-------------------+-----+---------+
+    | Gamma(k, theta)           | gamma       | k                 |     | theta   |
+    +---------------------------+-------------+-------------------+-----+---------+
+    | Beta(alpha, beta, [a, b]) | beta        | alpha, beta       | a   | b-a     |
+    +---------------------------+-------------+-------------------+-----+---------+
+    | Log-Normal(mu, sigma)     | lognorm     | sigma             | mu  |         |
+    +---------------------------+-------------+-------------------+-----+---------+
+    | Chi-Square(k)             | chi2        | k                 |     |         |
+    +---------------------------+-------------+-------------------+-----+---------+
+    | F(d1, d2)                 | f           | d1, d2            |     |         |
+    +---------------------------+-------------+-------------------+-----+---------+
+    | Triangular(a, b, c)       | triang      | c                 | a   | b-a     |
+    +---------------------------+-------------+-------------------+-----+---------+
+    | Student-T(v)              | t           | v                 |     |         |
+    +---------------------------+-------------+-------------------+-----+---------+
+    | Weibull(lamda, k)         | exponweib   | lamda, k          |     |         |
+    +---------------------------+-------------+-------------------+-----+---------+
     
     Thus, each distribution above would have the same call signature::
         
         >>> import scipy.stats as ss
         >>> ss.your_dist_here(args,loc=loc,scale=scale)
         
+    Convenient constructors have been created to make assigning these 
+    distributions easier. They follow the parameter notation found in the
+    respective Wikipedia articles:
+    
+    +---------------------------+---------------------------------------------------------------+
+    | MCERP Distibution         | Wikipedia page                                                |
+    +===========================+===============================================================+
+    | N(mu, sigma)              | http://en.wikipedia.org/wiki/Normal_distribution              |
+    +---------------------------+---------------------------------------------------------------+
+    | U(a, b)                   | http://en.wikipedia.org/wiki/Uniform_distribution_(continuous)|
+    +---------------------------+---------------------------------------------------------------+
+    | Exp(lamda, [mu])          | http://en.wikipedia.org/wiki/Exponential_distribution         |
+    +---------------------------+---------------------------------------------------------------+
+    | Gamma(k, theta)           | http://en.wikipedia.org/wiki/Gamma_distribution               |
+    +---------------------------+---------------------------------------------------------------+
+    | Beta(alpha, beta, [a, b]) | http://en.wikipedia.org/wiki/Beta_distribution                |
+    +---------------------------+---------------------------------------------------------------+
+    | LogN(mu, sigma)           | http://en.wikipedia.org/wiki/Log-normal_distribution          |
+    +---------------------------+---------------------------------------------------------------+
+    | X2(df)                    | http://en.wikipedia.org/wiki/Chi-squared_distribution         |
+    +---------------------------+---------------------------------------------------------------+
+    | F(dfn, dfd)               | http://en.wikipedia.org/wiki/F-distribution                   |
+    +---------------------------+---------------------------------------------------------------+
+    | Tri(a, b, c)              | http://en.wikipedia.org/wiki/Triangular_distribution          |
+    +---------------------------+---------------------------------------------------------------+
+    | T(df)                     | http://en.wikipedia.org/wiki/Student's_t-distribution         |
+    +---------------------------+---------------------------------------------------------------+
+    | Weib(lamda, k)            | http://en.wikipedia.org/wiki/Weibull_distribution             |
+    +---------------------------+---------------------------------------------------------------+
+
+
+    Thus, the following are equivalent::
+
+        >>> x = uv([10, 1, 0, 3, 0, 15, 0, 105])
+        >>> x = uv(rv=ss.norm(loc=10, scale=1))
+        >>> x = N(10, 1)
+
     Examples
     --------
     Using the first eight distribution moments::
@@ -591,21 +657,27 @@ class UncertainVariable(UncertainFunction, ADV):
         >>> x3 = uv([0.5, 0.25, 2, 9, 44, 265, 1854, 14833]) # exp. distributed
         >>> Z = (x1*x2**2)/(15*(1.5 + x3))
         >>> Z
-        UF(1176.45, 99699.6822919, 0.708013052954, 6.16324345122)
+        uv(1176.45, 99699.6822919, 0.708013052954, 6.16324345122)
 
     The result shows the mean, variance, and standardized skewness and kurtosis
     of the output variable Z.
     
-    Same example, but now using ``rv_continous`` objects::
+    Same example, but now using ``scipy.stats`` objects::
         
         >>> import scipy.stats as ss
         >>> x1 = uv(rv=ss.norm(loc=24, scale=1))  # normally distributed
         >>> x2 = uv(rv=ss.norm(loc=37, scale=4))  # normally distributed
         >>> x3 = uv(rv=ss.expon(scale=0.5))  # exponentially distributed
 
+    Or using the convenient distribution constructors::
+    
+        >>> x1 = N(24, 1)
+        >>> x2 = N(37, 4)
+        >>> x3 = Exp(2)
+        
     The results may be slightly different from using the moments manually since
     moment calculations can suffer from numerical errors during the integration
-    of the expectation equations above, but they will be close to each other.
+    of the expectation equations above, but they will be close enough.
     
     Basic math operations may be applied to distributions, where all 
     statistical calculations are performed using method of moments. Built-in
@@ -630,9 +702,9 @@ class UncertainVariable(UncertainFunction, ADV):
     second-order approximation to the method of moment equations. For example, 
     the equation f(x) = x*sin(x) has this issue::
         
-        >>> x = uv(rv=ss.norm(loc=0, scale=1)) # standard normal distribution
+        >>> x = N(0, 1)  # standard normal distribution
         >>> x*sin(x)
-        UF(1.0, 2.0, 2.82842712475, 15.0)
+        uv(1.0, 2.0, 2.82842712475, 15.0)
     
     This is the precise answer for f(x) = x**2, which just so happens to be the
     second-order Taylor series approximation of x*sin(x). The correct answer 
@@ -808,6 +880,201 @@ class UncertainVariable(UncertainFunction, ADV):
                 
         
 uv = UncertainVariable # a nicer form for the user
+
+###############################################################################
+# Define some convenience constructors for common statistical distributions.
+# Hopefully these are a little easier/more intuitive to use than the 
+# scipy.stats.distributions.
+###############################################################################
+
+def N(mu, sigma, tag=None):
+    """
+    A Normal (or Gaussian) random variate
+    
+    Parameters
+    ----------
+    mu : scalar
+        The mean value of the distribution
+    sigma : scalar
+        The standard deviation (must be positive and non-zero)
+    """
+    assert sigma>0, 'Sigma must be positive'
+    return uv(rv=ss.norm(loc=mu, scale=sigma), tag=tag)
+
+###############################################################################
+
+def U(a, b, tag=None):
+    """
+    A Uniform random variate
+    
+    Parameters
+    ----------
+    low : scalar
+        Lower bound of the distribution support.
+    high : scalar
+        Upper bound of the distribution support.
+    """
+    assert a<b, 'Lower bound must be less than the upper bound'
+    return uv(rv=ss.uniform(loc=a, scale=b-a), tag=tag)
+
+###############################################################################
+
+def Exp(lamda, mu=None, tag=None):
+    """
+    An Exponential random variate
+    
+    Parameters
+    ----------
+    lamda : scalar
+        The inverse scale (as shown on Wikipedia). 
+    
+    Optional
+    --------
+    mu : scalar
+        The mean value of the distribution (must be positive and non-zero). If 
+        this is given, ``lamda`` is ignored. (FYI: mu = 1/lamda.)
+    """
+    if mu is not None:
+        assert mu>0, 'Mean must be positive and not zero'
+        return uv(ss.expon(scale=mu), tag=tag)
+    else:
+        return uv(rv=ss.expon(scale=1./lamda), tag=tag)
+
+###############################################################################
+
+def Gamma(k, theta, tag=None):
+    """
+    A Gamma random variate
+    
+    Parameters
+    ----------
+    k : scalar
+        The shape parameter (must be positive and non-zero)
+    theta : scalar
+        The scale parameter (must be positive and non-zero)
+    """
+    assert k>0 and theta>0, 'Gamma parameters must be greater than zero'
+    return uv(rv=ss.gamma(k, scale=theta), tag=tag)
+
+###############################################################################
+
+def Beta(alpha, beta, a=0, b=1, tag=None):
+    """
+    A Beta random variate
+    
+    Parameters
+    ----------
+    alpha : scalar
+        The first shape parameter
+    beta : scalar
+        The second shape parameter
+    
+    Optional
+    --------
+    a : scalar
+        Lower bound of the distribution support (default=0)
+    b : scalar
+        Upper bound of the distribution support (default=1)
+    """
+    assert alpha>0 and beta>0, 'Shape parameters must be greater than zero'
+    return uv(rv=ss.beta(alpha, beta, loc=a, scale=b-a), tag=tag)
+
+###############################################################################
+
+def LogN(mu, sigma, tag=None):
+    """
+    A Log-Normal random variate
+    
+    Parameters
+    ----------
+    mu : scalar
+        The location parameter
+    sigma : scalar
+        The scale parameter (must be positive and non-zero)
+    """
+    assert sigma>0, 'Sigma must be positive'
+    return uv(rv=ss.lognorm(sigma, loc=mu), tag=tag)
+
+###############################################################################
+
+def X2(k, tag=None):
+    """
+    A Chi-Squared random variate
+    
+    Parameters
+    ----------
+    k : int
+        The degrees of freedom of the distribution (must be greater than one)
+    """
+    assert isinstance(df, int) and df>1, 'DF must be an int greater than 1'
+    return uv(rv=ss.chi2(df), tag=tag)
+
+###############################################################################
+
+def F(d1, d2, tag=None):
+    """
+    An F (fisher) random variate
+    
+    Parameters
+    ----------
+    d1 : int
+        Numerator degrees of freedom
+    d2 : int
+        Denominator degrees of freedom
+    """
+    assert isinstance(d1, int) and d1>1, 'DFN must be an int greater than 1'
+    assert isinstance(d2, int) and d2>1, 'DFD must be an int greater than 1'
+    return uv(rv=ss.f(d1, d2), tag=tag)
+
+###############################################################################
+
+def Tri(a, b, c, tag=None):
+    """
+    A triangular random variate
+    
+    Parameters
+    ----------
+    a : scalar
+        Lower bound of the distribution support (default=0)
+    b : scalar
+        Upper bound of the distribution support (default=1)
+    c : scalar
+        The location of the triangle's peak (a <= c <= b)
+    """
+    assert a<=c<=b, 'peak must lie in between low and high'
+    return uv(rv=ss.triang(c, loc=a, scale=b-a), tag=tag)
+
+###############################################################################
+
+def T(v, tag=None):
+    """
+    A Student-T random variate
+    
+    Parameters
+    ----------
+    v : int
+        The degrees of freedom of the distribution (must be greater than one)
+    """
+    assert isinstance(v, int) and v>1, 'DF must be an int greater than 1'
+    return uv(rv=ss.t(v), tag=tag)
+
+###############################################################################
+
+def Weib(lamda, k, tag=None):
+    """
+    A Weibull random variate
+    
+    Parameters
+    ----------
+    lamda : scalar
+        The scale parameter
+    k : scalar
+        The shape parameter
+    """
+    assert lamda>0 and k>0, 'Weibull scale and shape parameters must be greater than zero'
+    return uv(rv=ss.exponweib(lamda, k), tag=tag)
+
+###############################################################################
 
 def raw2central(v):
     """Convert raw moments (1 to len(v)) to central moments"""

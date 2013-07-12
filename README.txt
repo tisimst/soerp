@@ -3,7 +3,7 @@ Overview
 
 ``soerp`` is the Python implementation of the original Fortran code `SOERP` by N. D. Cox to apply a second-order analysis to `error propagation`_ (or uncertainty analysis). The ``soerp`` package allows you to **easily** and **transparently** track the effects of uncertainty through mathematical calculations. Advanced mathematical functions, similar to those in the standard `math`_ module can also be evaluated directly.
 
-In order to correctly use ``soerp``, knowledge of the **first eight statistical moments** is required. These are the *mean*, *variance*, and then the *standardized third through eighth moments*. These can be input manually in the form of an array, but they can also be **conveniently generated** using distributions from the ``scipy.stats`` sub-module. See the examples below for usage examples of both input methods. The result of all calculations generates a *mean*, *variance*, and *standardized skewness and kurtosis* coefficients.
+In order to correctly use ``soerp``, the **first eight statistical moments** of the underlying distribution are required. These are the *mean*, *variance*, and then the *standardized third through eighth moments*. These can be input manually in the form of an array, but they can also be **conveniently generated** using either the **nice constructors** or directly by using the distributions from the ``scipy.stats`` sub-module. See the examples below for usage examples of both input methods. The result of all calculations generates a *mean*, *variance*, and *standardized skewness and kurtosis* coefficients.
 
 
 Required Packages
@@ -14,34 +14,34 @@ Required Packages
 Suggested Packages
 ==================
 
-- `SciPy`_ : Scientific Python
+- `SciPy`_ : Scientific Python (the nice distribution constructors require this)
 
 Basic examples
 ==============
 ::
 
-    >>> from soerp import uv   # the constructor for uncertain variables
+    >>> from soerp import *   # the constructors for uncertain variables
 
-    >>> x1 = uv([24, 1, 0, 3, 0, 15, 0, 105])  # normally distributed
-    >>> x2 = uv([37, 16, 0, 3, 0, 15, 0, 105])  # normally distributed
-    >>> x3 = uv([0.5, 0.25, 2, 9, 44, 265, 1854, 14833])  # exponentially distributed
+    # these are equivalent ways to specify the distribution
+    >>> x = uv([10, 1, 0, 3, 0, 15, 0, 105])  # manually input moments
+    >>> x = uv(rv=ss.norm(loc=10, scale=1))  # directly using the scipy.stats distributions
+    >>> x = N(10, 1)  # a nice constructor (requires scipy)
+
+    >>> x1 = N(24, 1)  # normally distributed
+    >>> x2 = N(37, 4)  # normally distributed
+    >>> x3 = Exp(2)  # exponentially distributed
 
     >>> Z = (x1*x2**2)/(15*(1.5 + x3))
     >>> Z  # output compactly shows the mean, variance, and standardized skewness and kurtosis
-    uv(1176.45, 99699.682291666657, 0.70801305294370709, 6.1370133446354318)
+    uv(1176.45, 99699.6822917, 0.708013052944, 6.16324345127)
 
-    >>> Z.describe  # use for more detailed output
+    >>> Z.describe()  # use for more detailed output
     SOERP Uncertain Value:
      > Mean...................  1176.45
      > Variance...............  99699.6822917
      > Skewness Coefficient...  0.708013052944
-     > Kurtosis Coefficient...  6.13701334464
+     > Kurtosis Coefficient...  6.16324345127
         
-    >>> import scipy.stats as ss   # using empirically defined distribution objects
-    >>> x1 = uv(rv=ss.norm(loc=24, scale=1))  # normally distributed
-    >>> x2 = uv(rv=ss.norm(loc=37, scale=4))  # normally distributed
-    >>> x3 = uv(rv=ss.expon(scale=0.5))  # exponentially distributed
-    
     >>> x1.moments()  # the eight moments can be accessed at any time
     [24.0, 1.0, 0.0, 3.0000000000000053, 0.0, 15.000000000000004, 0.0, 105.0]
     
@@ -72,20 +72,20 @@ Basic examples
 
     # a more advanced example (volumetric gas flow through orifice meter)
     >>> from soerp.umath import *  # sin, exp, sqrt, etc.
-    >>> H = uv(rv=ss.norm(loc=64, scale=0.5))
-    >>> M = uv(rv=ss.norm(loc=16, scale=0.1))
-    >>> P = uv(rv=ss.norm(loc=361, scale=2))
-    >>> t = uv(rv=ss.norm(loc=165, scale=0.5))
+    >>> H = N(64, 0.5)
+    >>> M = N(16, 0.1)
+    >>> P = N(361, 2)
+    >>> t = N(165, 0.5)
     >>> C = 38.4
     >>> Q = C*umath.sqrt((520*H*P)/(M*(t + 460)))
     
-    >>> Q.describe
+    >>> Q.describe()
     SOERP Uncertain Value:
      > Mean...................  1330.99973939
      > Variance...............  58.210762839
      > Skewness Coefficient...  0.0109422068056
-     > Kurtosis Coefficient...  3.0003269571
-    
+     > Kurtosis Coefficient...  3.00032693502
+ 
 Main Features
 =============
 
@@ -93,6 +93,7 @@ Main Features
 2. Basic `NumPy` support without modification. Vectorized calculations built-in to the ``ad`` package.
 3. Nearly all standard `math`_ module functions supported through the ``soerp.umath`` sub-module. If you think a function is in there, it probably is.
 4. Nearly all derivatives calculated analytically using ``ad`` functionality.
+5. **Easy continuous distribution constructors**: N (`normal`_), U (`uniform`_), Exp (`exponential`_), Gamma (`gamma`_), Beta (`beta`_), LogN (`log-normal`_), X2 (`chi-squared`_), F (`f or fisher`_), Tri (`triangular`_), T (`student's-t`_), Weib (`weibull`_). The location, scale, and shape parameters follow the notation in the respective Wikipedia articles.
 
 Installation
 ============
@@ -133,3 +134,15 @@ References
 .. _Abraham Lee: mailto: tisimst@gmail.com
 .. _Eric O. LEBIGOT: http://www.linkedin.com/pub/eric-lebigot/22/293/277
 .. _PEP8: http://www.python.org/dev/peps/pep-0008
+.. _normal: http://en.wikipedia.org/wiki/Normal_distribution
+.. _uniform: http://en.wikipedia.org/wiki/Uniform_distribution_(continuous)
+.. _exponential: http://en.wikipedia.org/wiki/Exponential_distribution
+.. _gamma: http://en.wikipedia.org/wiki/Gamma_distribution 
+.. _beta: http://en.wikipedia.org/wiki/Beta_distribution
+.. _log-normal: http://en.wikipedia.org/wiki/Log-normal_distribution
+.. _chi-squared: http://en.wikipedia.org/wiki/Chi-squared_distribution
+.. _f or fisher: http://en.wikipedia.org/wiki/F-distribution
+.. _triangular: http://en.wikipedia.org/wiki/Triangular_distribution
+.. _student's-t: http://en.wikipedia.org/wiki/Student's_t-distribution
+.. _weibull: http://en.wikipedia.org/wiki/Weibull_distribution
+

@@ -4,7 +4,7 @@ with open('README.txt') as file:
     long_description = file.read()
 
 setup(name='soerp',
-    version='0.8.2',
+    version='0.9',
     author='Abraham Lee',
     description='Second Order ERror Propagation',
     author_email='tisimst@gmail.com',
@@ -14,6 +14,10 @@ setup(name='soerp',
     package_dir={'soerp':''},
     packages=['soerp'],
     requires=['ad'],
+    include_package_data = True,
+    package_data = {
+        '': ['revision_history.txt'],
+        },
     keywords=[
         'uncertainty analysis', 
         'uncertainties', 
