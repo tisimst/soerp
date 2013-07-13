@@ -7,11 +7,23 @@ Author: Abraham Lee
 Author-email: tisimst@gmail.com
 License: BSD License
 Description: Overview
-        =========
+        ========
         
-        ``soerp`` is the Python implementation of the original Fortran code `SOERP` by N. D. Cox to apply a second-order analysis to `error propagation`_ (or uncertainty analysis). The ``soerp`` package allows you to **easily** and **transparently** track the effects of uncertainty through mathematical calculations. Advanced mathematical functions, similar to those in the standard `math`_ module can also be evaluated directly.
+        ``soerp`` is the Python implementation of the original Fortran code `SOERP` 
+        by N. D. Cox to apply a second-order analysis to `error propagation`_ (or 
+        uncertainty analysis). The ``soerp`` package allows you to **easily** and 
+        **transparently** track the effects of uncertainty through mathematical 
+        calculations. Advanced mathematical functions, similar to those in the standard 
+        `math`_ module can also be evaluated directly.
         
-        In order to correctly use ``soerp``, the **first eight statistical moments** of the underlying distribution are required. These are the *mean*, *variance*, and then the *standardized third through eighth moments*. These can be input manually in the form of an array, but they can also be **conveniently generated** using either the **nice constructors** or directly by using the distributions from the ``scipy.stats`` sub-module. See the examples below for usage examples of both input methods. The result of all calculations generates a *mean*, *variance*, and *standardized skewness and kurtosis* coefficients.
+        In order to correctly use ``soerp``, the **first eight statistical moments** 
+        of the underlying distribution are required. These are the *mean*, *variance*, 
+        and then the *standardized third through eighth moments*. These can be input 
+        manually in the form of an array, but they can also be **conveniently 
+        generated** using either the **nice constructors** or directly by using the 
+        distributions from the ``scipy.stats`` sub-module. See the examples below for 
+        usage examples of both input methods. The result of all calculations generates a 
+        *mean*, *variance*, and *standardized skewness and kurtosis* coefficients.
         
         
         Required Packages
@@ -23,6 +35,11 @@ Description: Overview
         ==================
         
         - `SciPy`_ : Scientific Python (the nice distribution constructors require this)
+        
+        Other Recommendations
+        =====================
+        
+        - `uncertainties`_ : First order error propagation
         
         Basic examples
         ==============
@@ -97,11 +114,20 @@ Description: Overview
         Main Features
         =============
         
-        1. **Transparent calculations** with derivatives automatically calculated. **No or little modification** to existing code required.
-        2. Basic `NumPy` support without modification. Vectorized calculations built-in to the ``ad`` package.
-        3. Nearly all standard `math`_ module functions supported through the ``soerp.umath`` sub-module. If you think a function is in there, it probably is.
+        1. **Transparent calculations** with derivatives automatically calculated. 
+           **No or little modification** to existing code required.
+        2. Basic `NumPy` support without modification. Vectorized calculations built-in  
+           to the ``ad`` package.
+        3. Nearly all standard `math`_ module functions supported through the 
+           ``soerp.umath`` sub-module. If you think a function is in there, it probably 
+           is.
         4. Nearly all derivatives calculated analytically using ``ad`` functionality.
-        5. **Easy continuous distribution constructors**: N (`normal`_), U (`uniform`_), Exp (`exponential`_), Gamma (`gamma`_), Beta (`beta`_), LogN (`log-normal`_), X2 (`chi-squared`_), F (`f or fisher`_), Tri (`triangular`_), T (`student's-t`_), Weib (`weibull`_). The location, scale, and shape parameters follow the notation in the respective Wikipedia articles.
+        5. **Easy continuous distribution constructors**: N (`normal`_), U (`uniform`_),
+           Exp (`exponential`_), Gamma (`gamma`_), Beta (`beta`_), LogN 
+           (`log-normal`_), X2 (`chi-squared`_), F (`f or fisher`_), Tri 
+           (`triangular`_), T (`student's-t`_), Weib (`weibull`_). The location, scale, 
+           and shape parameters follow the notation in the respective Wikipedia 
+           articles.
         
         Installation
         ============
@@ -111,11 +137,29 @@ Description: Overview
         You have several easy, convenient options to install the ``soerp`` package 
         (administrative privileges may be required)
         
-        1. Download the package files below, unzip to any directory, and run ``python setup.py install`` from the command-line
-        2. Simply copy the unzipped ``soerp-XYZ`` directory to any other location that python can find it and rename it ``soerp``
-        3. If ``setuptools`` is installed, run ``easy_install --upgrade soerp`` from the command-line
+        1. Download the package files below, unzip to any directory, and run 
+           ``python setup.py install`` from the command-line.
+           
+        2. Simply copy the unzipped ``soerp-XYZ`` directory to any other location that 
+           python can find it and rename it ``soerp``.
+           
+        3. If ``setuptools`` is installed, run ``easy_install --upgrade soerp`` from 
+           the command-line.
+           
         4. If ``pip`` is installed, run ``pip --upgrade soerp`` from the command-line
         
+        Python 3
+        ========
+        
+        To use this package with Python 3.x, you will need to run the ``2to3`` tool at
+        the command-line using the following syntax while in the unzipped ``ad`` 
+        directory::
+        
+            $ 2to3 -w -f all *.py
+            
+        This should take care of the main changes required. If bugs continue to pop up,
+        please email the author.
+            
         Contact
         =======
         
@@ -125,7 +169,11 @@ Description: Overview
         Credits
         =======
         
-        A lot of the credit goes to `Eric O. LEBIGOT`_ who first developed `uncertainties`_, a very nice first-order package for error propagation, from which many inspiring ideas (like correlating variables, etc.) are re-used or slightly evolved. If you **don't** need second order functionality, I recommend using his package.
+        A lot of the credit goes to `Eric O. LEBIGOT`_ who first developed 
+        `uncertainties`_, a very nice first-order package for error propagation, from 
+        which many inspiring ideas (like correlating variables, etc.) are re-used or 
+        slightly evolved. If you **don't** need second order functionality, I recommend 
+        using his package.
         
         References
         ==========
@@ -178,4 +226,3 @@ Classifier: Topic :: Software Development :: Libraries
 Classifier: Topic :: Software Development :: Libraries :: Python Modules
 Classifier: Topic :: Utilities
 Requires: ad
-
