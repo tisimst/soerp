@@ -1,6 +1,8 @@
 ``soerp`` Package Documentation
 ===============================
 
+.. contents::
+
 Overview
 --------
 
