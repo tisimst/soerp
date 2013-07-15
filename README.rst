@@ -191,8 +191,8 @@ Contact
 Please send **feature requests, bug reports, or feedback** to 
 `Abraham Lee`_.
 
-Credits
--------
+Acknowledgements
+----------------
 
 A lot of the credit goes to `Eric O. LEBIGOT`_ who first developed 
 `uncertainties`_, a very nice first-order package for error propagation, from 
