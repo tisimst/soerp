@@ -2,7 +2,7 @@ Metadata-Version: 1.1
 Name: soerp
 Version: 0.9
 Summary: Second Order ERror Propagation
-Home-page: http://pypi.python.org/pypi/soerp
+Home-page: https://github.com/tisimst/soerp
 Author: Abraham Lee
 Author-email: tisimst@gmail.com
 License: BSD License

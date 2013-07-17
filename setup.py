@@ -1,6 +1,6 @@
 from distutils.core import setup
 
-with open('README.txt') as file:
+with open('README.rst') as file:
     long_description = file.read()
 
 setup(name='soerp',
@@ -16,7 +16,7 @@ setup(name='soerp',
     requires=['ad'],
     include_package_data = True,
     package_data = {
-        '': ['revision_history.txt'],
+        '': ['revision_history.txt', 'README.rst'],
         },
     keywords=[
         'uncertainty analysis', 
