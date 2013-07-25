@@ -25,6 +25,13 @@ from method_of_moments import variance_components
 from method_of_moments import variance_contrib
 import scipy.stats as ss
 
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    matplotlib_installed = False
+else:
+    matplotlib_installed = True
+
 __version_info__ = (0, 9)
 __version__ = '.'.join(map(str, __version_info__))
 
@@ -849,11 +856,7 @@ class UncertainVariable(UncertainFunction, ADV):
         assert len(m)==8, 'Input moments must include eight values'
         self._moments = m
 
-    try:
-        import matplotlib.pyplot as plt
-    except ImportError:
-        pass
-    else:
+    if matplotlib_installed:
         def plot(self, vals=None, **kwargs):
             """Plot the distribution of the input variable.
             
@@ -869,7 +872,7 @@ class UncertainVariable(UncertainFunction, ADV):
                     low = min(vals)
                     high = max(vals)
                 vals = np.linspace(low,high,500)
-                p = plt.plot(vals,self._dist.pdf(vals),**kwargs)
+                plt.plot(vals,self._dist.pdf(vals),**kwargs)
                 plt.title(repr(self))
                 plt.xlim(low-(high-low)*0.1,high+(high-low)*0.1)
                 plt.show()
