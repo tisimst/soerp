@@ -1,18 +1,17 @@
 Metadata-Version: 1.1
 Name: soerp
-Version: 0.9
+Version: 0.9.1
 Summary: Second Order ERror Propagation
 Home-page: https://github.com/tisimst/soerp
 Author: Abraham Lee
 Author-email: tisimst@gmail.com
 License: BSD License
-Description: ``soerp`` Package Documentation
+Description: ===============================
+        ``soerp`` Package Documentation
         ===============================
         
-        .. contents::
-        
         Overview
-        --------
+        ========
         
         ``soerp`` is the Python implementation of the original Fortran code `SOERP` 
         by N. D. Cox to apply a second-order analysis to `error propagation`_ (or 
@@ -32,12 +31,12 @@ Description: ``soerp`` Package Documentation
         
         
         Required Packages
-        -----------------
+        =================
         
-        - ad_ : For automatic differentiation (install this first).
+        - ad_ : For first- and second-order automatic differentiation (install this first).
         
         Suggested Packages
-        ------------------
+        ==================
         
         - NumPy_ : Numeric Python
         
@@ -46,60 +45,111 @@ Description: ``soerp`` Package Documentation
         - Matplotlib_ : Python plotting library
         
         Basic examples
-        --------------
-        ::
+        ==============
         
-            >>> from soerp import *   # the constructors for uncertain variables
+        Let's begin by importing all the available constructors::
         
-            # these are equivalent ways to specify the distribution
-            >>> x = uv([10, 1, 0, 3, 0, 15, 0, 105])  # manually input moments
-            >>> x = uv(rv=ss.norm(loc=10, scale=1))  # directly using the scipy.stats distributions
-            >>> x = N(10, 1)  # a nice constructor (still requires scipy)
+            >>> from soerp import *   # uv, N, U, Exp, etc.
+        
+        Now, we can see that there are several equivalent ways to specify a statistical distribution, say a Normal distribution with a mean value of 10 and a standard deviation of 1:
+        
+        - Manually input the first 8 moments (mean, variance, and 3rd-8th standardized central moments)::
+        
+            >>> x = uv([10, 1, 0, 3, 0, 15, 0, 105])
+        
+        - Use the ``rv`` kwarg to input a distribution from the ``scipy.stats`` module::
+        
+            >>> x = uv(rv=ss.norm(loc=10, scale=1))
+        
+        - Use a built-in convenience constructor (typically the easiest if you can)::
+        
+            >>> x = N(10, 1)
+        
+        A Simple Example
+        ----------------
+        
+        Now let's walk through an example of a three-part assembly stack-up::
         
             >>> x1 = N(24, 1)  # normally distributed
             >>> x2 = N(37, 4)  # normally distributed
             >>> x3 = Exp(2)  # exponentially distributed
-        
             >>> Z = (x1*x2**2)/(15*(1.5 + x3))
-            >>> Z  # output compactly shows the mean, variance, and standardized skewness and kurtosis
+        
+        We can now see the results of the calculations in two ways:
+        
+        #. The usual ``print`` statement (or simply the object if in a terminal)::
+        
+            >>> Z  # "print" is optional at the command-line
             uv(1176.45, 99699.6822917, 0.708013052944, 6.16324345127)
         
-            >>> Z.describe()  # use for more detailed output
+        #. The ``describe`` class method that explains briefly what the values are::
+        
+            >>> Z.describe()
             SOERP Uncertain Value:
              > Mean...................  1176.45
              > Variance...............  99699.6822917
              > Skewness Coefficient...  0.708013052944
              > Kurtosis Coefficient...  6.16324345127
-                
-            >>> x1.moments()  # the eight moments can be accessed at any time
+        
+        Distribution Moments
+        --------------------
+        
+        The eight moments of any input variable (and four of any output variable) can be accessed using the ``moments`` class method, as in::
+        
+            >>> x1.moments()
             [24.0, 1.0, 0.0, 3.0000000000000053, 0.0, 15.000000000000004, 0.0, 105.0]
-            
-            >>> x1-x1  # correlations are correctly handled
+            >>> Z.moments()
+            [1176.45, 99699.6822917, 0.708013052944, 6.16324345127]
+        
+        Correlations
+        ------------
+        
+        Statistical correlations are correctly handled, even after calculations have taken place::
+        
+            >>> x1 - x1
             0.0
-            
-            # convenient access to derivatives
-            >>> Z.d(x1)  # first derivative wrt x1 (returns all if no input, 0 if derivative doesn't exist)
+            >>> square = x1**2
+            >>> square - x1*x1
+            0.0
+        
+        Derivatives
+        -----------
+        
+        Derivatives with respect to original variables are calculated via the ad_ package and are accessed using the **intuitive class methods**::
+        
+            >>> Z.d(x1)  # dZ/dx1
             45.63333333333333
         
-            >>> Z.d2(x2)  # second derivative wrt x2
+            >>> Z.d2(x2)  # d^2Z/dx2^2
             1.6
         
-            >>> Z.d2c(x1, x3)  # second cross-derivative wrt x1 and x3 (order doesn't matter)
+            >>> Z.d2c(x1, x3)  # d^2Z/dx1dx3 (order doesn't matter)
             -22.816666666666666
             
-            >>> Z.gradient([x1, x2, x3])  # convenience function, useful for optimization
+        When we need multiple derivatives at a time, we can use the ``gradient`` and ``hessian`` class methods::
+        
+            >>> Z.gradient([x1, x2, x3])
             [45.63333333333333, 59.199999999999996, -547.6]
         
-            >>> Z.hessian([x1, x2, x3])   # another convenience function
+            >>> Z.hessian([x1, x2, x3])
             [[0.0, 2.466666666666667, -22.816666666666666], [2.466666666666667, 1.6, -29.6], [-22.816666666666666, -29.6, 547.6]]
         
-            >>> Z.error_components(pprint=True)  # show how each variable is contributing errors
+        Error Components/Variance Contributions
+        ---------------------------------------
+        
+        Another useful feature is available through the ``error_components`` class method that has various ways of representing the first- and second-order variance components::
+        
+            >>> Z.error_components(pprint=True)
             COMPOSITE VARIABLE ERROR COMPONENTS
             uv(37.0, 16.0, 0.0, 3.0) = 58202.9155556 or 58.378236%
             uv(24.0, 1.0, 0.0, 3.0) = 2196.15170139 or 2.202767%
             uv(0.5, 0.25, 2.0, 9.0) = -35665.8249653 or 35.773258%
         
-            # a more advanced example (volumetric gas flow through orifice meter)
+        Advanced Example
+        ----------------
+        
+        Here's a *slightly* more advanced example, estimating the statistical properties of volumetric gas flow through an orifice meter::
+        
             >>> from soerp.umath import *  # sin, exp, sqrt, etc.
             >>> H = N(64, 0.5)
             >>> M = N(16, 0.1)
@@ -107,7 +157,6 @@ Description: ``soerp`` Package Documentation
             >>> t = N(165, 0.5)
             >>> C = 38.4
             >>> Q = C*umath.sqrt((520*H*P)/(M*(t + 460)))
-            
             >>> Q.describe()
             SOERP Uncertain Value:
              > Mean...................  1330.99973939
@@ -115,8 +164,10 @@ Description: ``soerp`` Package Documentation
              > Skewness Coefficient...  0.0109422068056
              > Kurtosis Coefficient...  3.00032693502
          
+        This seems to indicate that even though there are products, divisions, and the usage of ``sqrt``, the result resembles a normal distribution (i.e., Q ~ N(1331, 7.63), where the standard deviation = sqrt(58.2) = 7.63).
+        
         Main Features
-        -------------
+        =============
         
         1. **Transparent calculations** with derivatives automatically calculated. 
            **No or little modification** to existing code required.
@@ -155,26 +206,32 @@ Description: ``soerp`` Package Documentation
            - ``Weib(lamda, k)`` : `Weibull distribution`_
         
            The location, scale, and shape parameters follow the notation in the 
-           respective Wikipedia articles.
+           respective Wikipedia articles. *Discrete distributions are not recommended 
+           for use at this time. If you need discrete distributions, try the* mcerp_ 
+           *python package instead.*
         
         Installation
-        ------------
+        ============
         
         **Make sure you install the** `ad`_ **package first!**
         
         You have several easy, convenient options to install the ``soerp`` package 
         (administrative privileges may be required)
         
-        1. Download the package files below, unzip to any directory, and run 
-           ``python setup.py install`` from the command-line.
+        1. Download the package files below, unzip to any directory, and run::
+        
+            $ [sudo] python setup.py install
            
         2. Simply copy the unzipped ``soerp-XYZ`` directory to any other location that 
            python can find it and rename it ``soerp``.
            
-        3. If ``setuptools`` is installed, run ``easy_install --upgrade soerp`` from 
-           the command-line.
+        3. If ``setuptools`` is installed, run::
+        
+            $ easy_install --upgrade soerp
            
-        4. If ``pip`` is installed, run ``pip --upgrade soerp`` from the command-line
+        4. If ``pip`` is installed, run::
+        
+            $ pip install --upgrade soerp
         
         Python 3
         --------
@@ -190,31 +247,32 @@ Description: ``soerp`` Package Documentation
         please email the author.
             
         See Also
-        --------
+        ========
         
-        - uncertainties_ : First order error propagation
+        - uncertainties_ : First-order error propagation
         
-        - mcerp_ : Real-time Monte Carlo, Latin-Hypercube Sampling-based, Error Propagation
+        - mcerp_ : Real-time latin-hypercube sampling-based Monte Carlo error propagation
         
         Contact
-        -------
+        =======
         
         Please send **feature requests, bug reports, or feedback** to 
         `Abraham Lee`_.
         
         Acknowledgements
-        ----------------
+        ================
         
-        A lot of the credit goes to `Eric O. LEBIGOT`_ who first developed 
-        `uncertainties`_, a very nice first-order package for error propagation, from 
-        which many inspiring ideas (like correlating variables, etc.) are re-used or 
-        slightly evolved. If you **don't** need second order functionality, I recommend 
-        using his package.
+        The author wishes to thank `Eric O. LEBIGOT`_ who first developed the
+        `uncertainties`_ python package (for first-order error propagation), 
+        from which many inspiring ideas (like maintaining object correlations, etc.) 
+        are re-used and/or have been slightly evolved. *If you don't need second
+        order functionality, his package is an excellent alternative since it is
+        optimized for first-order uncertainty analysis.*
         
         References
-        ----------
+        ==========
         
-        - N.D. Cox, 1979, Tolerance Analysis by Computer, Journal of Quality Technology, Vol. 11, No. 2, pp. 80-87
+        - N.D. Cox, 1979, *Tolerance Analysis by Computer*, Journal of Quality Technology, Vol. 11, No. 2, pp. 80-87
         
         
         
@@ -263,4 +321,3 @@ Classifier: Topic :: Software Development
 Classifier: Topic :: Software Development :: Libraries
 Classifier: Topic :: Software Development :: Libraries :: Python Modules
 Classifier: Topic :: Utilities
-Requires: ad
