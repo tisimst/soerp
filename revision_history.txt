@@ -1,3 +1,15 @@
+soerp-0.9.1
+===========
+
+- Fixed some minor bugs
+
+- Improved documentation
+
+soerp-0.9
+=========
+
+- Added distribution convenience constructors (N, U, Exp, etc.)
+
 soerp-0.8.2
 ===========
 

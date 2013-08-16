@@ -4,7 +4,7 @@ with open('README.rst') as file:
     long_description = file.read()
 
 setup(name='soerp',
-    version='0.9',
+    version='0.9.1',
     author='Abraham Lee',
     description='Second Order ERror Propagation',
     author_email='tisimst@gmail.com',
@@ -13,7 +13,7 @@ setup(name='soerp',
     long_description=long_description,
     package_dir={'soerp':''},
     packages=['soerp'],
-    requires=['ad'],
+    install_requires=['ad'],
     include_package_data = True,
     package_data = {
         '': ['revision_history.txt', 'README.rst'],
