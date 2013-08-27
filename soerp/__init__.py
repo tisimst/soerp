@@ -19,7 +19,13 @@ A lot of code here was inspired/evolved from the `uncertainties`_ package by
 """
 import math
 import numpy as np
-from ad import ADF,ADV
+try:
+    from ad import ADF,ADV
+except ImportError:
+    raise
+finally:
+    pass
+
 from method_of_moments import soerp_numeric
 from method_of_moments import variance_components
 from method_of_moments import variance_contrib

@@ -1,13 +1,12 @@
 import os
 from setuptools import setup
-import soerp
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
     name='soerp',
-    version=soerp.__version__,
+    version='0.9.3',
     author='Abraham Lee',
     description='Second Order ERror Propagation',
     author_email='tisimst@gmail.com',
