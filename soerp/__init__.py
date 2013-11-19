@@ -38,8 +38,8 @@ except ImportError:
 else:
     matplotlib_installed = True
 
-__version_info__ = (0, 9, 4)
-__version__ = '.'.join(map(str, __version_info__))
+__version_info__ = (0, 9, 5)
+__version__ = '.'.join(list(map(str, __version_info__)))
 
 __author__ = 'Abraham Lee'
 
@@ -98,8 +98,6 @@ class UncertainFunction(ADF):
 #        # place-holder for pickling
 #        self._hash = None
 
-    __slots__ = ['x','_lc','_qc','_cp','_dist','_moments']#,'_trace']
-    
     _dist = None
     _moments = None
     
@@ -198,7 +196,7 @@ class UncertainFunction(ADF):
         s += ' > Variance............... {: }\n'.format(vr)
         s += ' > Skewness Coefficient... {: }\n'.format(sk)
         s += ' > Kurtosis Coefficient... {: }\n'.format(kt)
-        print s
+        print(s)
         
     def _get_inputs_for_soerp(self):
         """
@@ -336,11 +334,11 @@ class UncertainFunction(ADF):
                             error_wrt_var[v1] += 0.5*vc_cp[(v1,v2)]
                             error_wrt_var[v2] += 0.5*vc_cp[(v1,v2)]
             if pprint:
-                print 'COMPOSITE VARIABLE ERROR COMPONENTS'
+                print('COMPOSITE VARIABLE ERROR COMPONENTS')
                 for v in variables:
-                    print '{:} = {:} or {:%}'.format(v, error_wrt_var[v],
-                        np.abs(error_wrt_var[v]/vz[2]))
-                print ' ' # one more for good measure
+                    print('{:} = {:} or {:%}'.format(v, error_wrt_var[v],
+                        np.abs(error_wrt_var[v]/vz[2])))
+                print(' ')  # one more for good measure
             else:
                 return error_wrt_var
         else:
@@ -352,39 +350,39 @@ class UncertainFunction(ADF):
             if pprint:
                 vcont_lc, vcont_qc, vcont_cp = variance_contrib(vlc, vqc, vcp, 
                     vz)
-                print '*'*65
-                print 'LINEAR ERROR COMPONENTS:'
+                print('*'*65)
+                print('LINEAR ERROR COMPONENTS:')
                 for i,v1 in enumerate(variables):
                     if vc_lc.has_key(v1):
-                        print '{:} = {:} or {:%}'.format(v1, vc_lc[v1],
-                            vcont_lc[i])
+                        print('{:} = {:} or {:%}'.format(v1, vc_lc[v1],
+                            vcont_lc[i]))
                     else:
-                        print '{:} = {:} or {:%}'.format(v1,0.0,0.0)
+                        print('{:} = {:} or {:%}'.format(v1,0.0,0.0))
                 
-                print '*'*65
-                print 'QUADRATIC ERROR COMPONENTS:'
+                print('*'*65)
+                print('QUADRATIC ERROR COMPONENTS:')
                 for i,v1 in enumerate(variables):
                     if vc_qc.has_key(v1):
-                        print '{:} = {:} or {:%}'.format(v1,vc_qc[v1],
-                            vcont_qc[i])
+                        print('{:} = {:} or {:%}'.format(v1,vc_qc[v1],
+                            vcont_qc[i]))
                     else:
-                        print '{:} = {:} or {:%}'.format(v1,0.0,0.0)
+                        print('{:} = {:} or {:%}'.format(v1,0.0,0.0))
     
-                print '*'*65
-                print 'CROSS-PRODUCT ERROR COMPONENTS:'
+                print('*'*65)
+                print('CROSS-PRODUCT ERROR COMPONENTS:')
                 for i, v1 in enumerate(variables):
                     for j, v2 in enumerate(variables):
                         if i<j:
                             if vc_cp.has_key((v1, v2)):
-                                print '({:}, {:}) = {:} or {:%}'.format(v1, v2,
-                                    vc_cp[v1, v2], vcont_cp[i, j])
+                                print('({:}, {:}) = {:} or {:%}'.format(v1, v2,
+                                    vc_cp[v1, v2], vcont_cp[i, j]))
                             elif vc_cp.has_key((v2, v1)):
-                                print '({:}, {:}) = {:} or {:%}'.format(v2, v1,
-                                    vc_cp[v2, v1], vcont_cp[j, i])
+                                print('({:}, {:}) = {:} or {:%}'.format(v2, v1,
+                                    vc_cp[v2, v1], vcont_cp[j, i]))
                             else:
-                                print '({:}, {:}) = {:} or {:%}'.format(v1, v2,
-                                    0.0, 0.0)
-                print ' ' # one more for good measure
+                                print('({:}, {:}) = {:} or {:%}'.format(v1, v2,
+                                    0.0, 0.0))
+                print(' ')  # one more for good measure
             else:
                 return (vc_lc, vc_qc, vc_cp)
     
@@ -441,7 +439,7 @@ class UncertainFunction(ADF):
         return not self==val
     
     def __lt__(self, val):
-        self, val = map(to_uncertain_func, [self, val])
+        val = to_uncertain_func(val)
         return True if float(self.mean - val.mean) < 0 else False
     
     def __le__(self, val):
@@ -459,42 +457,6 @@ class UncertainFunction(ADF):
     def sqrt(self):
         return _make_UF_compatible_object(ADF.sqrt(self))
         
-#    def __deepcopy__(self):
-#        """
-#        Hook for the standard copy module.
-#
-#        The returned UncertainFunction is a completely fresh copy,
-#        which is fully independent of any variable defined so far.
-#        New variables are specially created for the returned
-#        UncertainFunction object.
-#        """
-#        return UncertainFunction(
-#            self.x,
-#            dict((copy.deepcopy(var), deriv)
-#                 for (var, deriv) in self._lc.iteritems()),
-#            dict((copy.deepcopy(var), deriv)
-#                 for (var, deriv) in self._qc.iteritems()),
-#            dict(((copy.deepcopy(var1), copy.deepcopy(var2)), deriv)
-#                 for ((var1, var2), deriv) in self._cp.iteritems()))
-#
-
-    def __getstate__(self):
-        """
-        Hook for the pickle module.
-        """
-        obj_slot_values = dict((k, getattr(self, k)) for k in
-                               # self.__slots__ would not work when
-                               # self is an instance of a subclass:
-                               UncertainFunction.__slots__)
-        return obj_slot_values
-
-    def __setstate__(self, data_dict):
-        """
-        Hook for the pickle module.
-        """        
-        for (name, value) in data_dict.iteritems():
-            setattr(self, name, value)
-
 def _make_UF_compatible_object(tmp):
     if isinstance(tmp, ADF):
         return UncertainFunction(tmp.x, tmp.d(), tmp.d2(), tmp.d2c())
@@ -1120,7 +1082,7 @@ def covariance_matrix(nums_with_uncert):
          [ 0.01  0.02  0.05]]
          
     """
-    ufuncs = map(to_uncertain_func, nums_with_uncert)
+    ufuncs = list(map(to_uncertain_func, nums_with_uncert))
     cov_matrix = []
     for (i1, expr1) in enumerate(ufuncs):
         derivatives1 = expr1._lc  # Optimization
@@ -1170,7 +1132,7 @@ def correlation_matrix(nums_with_uncert):
          [ 0.4472136   0.89442719  1.        ]]        
 
     """
-    ufuncs = map(to_uncertain_func, nums_with_uncert)
+    ufuncs = list(map(to_uncertain_func, nums_with_uncert))
     cov_matrix = covariance_matrix(ufuncs)
     corr_matrix = []
     for (i1, expr1) in enumerate(ufuncs):

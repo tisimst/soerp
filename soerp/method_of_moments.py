@@ -370,7 +370,7 @@ def rawmoment(slc, sqc, scp, vm, k):
     ############################
     
     else:
-        print 'Can only calculate raw moments k = 0 to 4. Sorry.'
+        print('Can only calculate raw moments k = 0 to 4. Sorry.')
         ans = None
     
     return ans
@@ -405,7 +405,7 @@ def centralmoment(vi, k):
     elif k==4:
         ans = vi[4] - 4*vi[3]*vi[1] + 6*vi[2]*vi[1]**2 - 3*vi[1]**4
     else:
-        print 'Can only calculate central moments k = 0 to 4. Sorry.'
+        print('Can only calculate central moments k = 0 to 4. Sorry.')
         ans = None
     return ans
 
@@ -602,29 +602,29 @@ def soerp_numeric(slc, sqc, scp, var_moments, func0, title=None, debug=False,
         ********************************************************************************
     """
     if not silent:
-        print '\n', '*'*80
+        print('\n', '*'*80)
         if title:
-            print '{:*^80}'.format(' SOERP: ' + title + ' ')
+            print('{:*^80}'.format(' SOERP: ' + title + ' '))
 
     ############################
 
     vy = np.empty(5)
     if debug and not silent:
-        print '*'*80
+        print('*'*80)
     for k in range(5):
         vy[k] = rawmoment(slc, sqc, scp, var_moments, k)
         if debug and not silent:
-            print 'Raw Moment', k, ':', vy[k]
+            print('Raw Moment {}: {}'.format(k, vy[k]))
 
     ############################
 
     vz = np.empty(5)
     if debug and not silent:
-        print '*'*80
+        print('*'*80)
     for k in range(5):
         vz[k] = centralmoment(vy, k)
         if debug and not silent:
-            print 'Central Moment', k, ':', vz[k]
+            print('Central Moment {}: {}'.format(k, vz[k]))
     sysmean = float(vy[1] + func0)
 
     ############################
@@ -635,16 +635,16 @@ def soerp_numeric(slc, sqc, scp, var_moments, func0, title=None, debug=False,
     n = len(slc)
 
     if not silent:
-        print '*'*80
+        print('*'*80)
         for i in range(n):
-            print 'Variance Contribution of lc[x{:d}]: {:7.5%}'.format(i, vlc[i])
+            print('Variance Contribution of lc[x{:d}]: {:7.5%}'.format(i, vlc[i]))
 
         for i in range(n):
-            print 'Variance Contribution of qc[x{:d}]: {:7.5%}'.format(i, vqc[i])
+            print('Variance Contribution of qc[x{:d}]: {:7.5%}'.format(i, vqc[i]))
 
         for i in range(n - 1):
             for j in range(i + 1, n):
-                print 'Variance Contribution of cp[x{:d}, x{:d}]: {:7.5%}'.format(i, j, vcp[i, j])
+                print('Variance Contribution of cp[x{:d}, x{:d}]: {:7.5%}'.format(i, j, vcp[i, j]))
         
         
     ############################
@@ -658,20 +658,20 @@ def soerp_numeric(slc, sqc, scp, var_moments, func0, title=None, debug=False,
         beta2 = 0.0
     beta1 = rtbt1**2
     if not silent:
-        print '*'*80
-        print 'MEAN-INTERCEPT (EDEL1)....................','{: 8.7E}'.format(vy[1])
-        print 'MEAN......................................','{: 8.7E}'.format(sysmean)
-        print 'SECOND MOMENT (EDEL2).....................','{: 8.7E}'.format(vy[2])
-        print 'VARIANCE (VARDL)..........................','{: 8.7E}'.format(vz[2])
-        print 'STANDARD DEVIATION (RTVAR)................','{: 8.7E}'.format(stdev)
-        print 'THIRD MOMENT (EDEL3)......................','{: 8.7E}'.format(vy[3])
-        print 'THIRD CENTRAL MOMENT (MU3DL)..............','{: 8.7E}'.format(vz[3])
-        print 'COEFFICIENT OF SKEWNESS SQUARED (BETA1)...','{: 8.7E}'.format(beta1)
-        print 'COEFFICIENT OF SKEWNESS (RTBT1)...........','{: 8.7E}'.format(rtbt1)
-        print 'FOURTH MOMENT (EDEL4).....................','{: 8.7E}'.format(vy[4])
-        print 'FOURTH CENTRAL MOMENT (MU4DL).............','{: 8.7E}'.format(vz[4])
-        print 'COEFFICIENT OF KURTOSIS (BETA2)...........','{: 8.7E}'.format(beta2)
-        print '*'*80
+        print('*'*80)
+        print('MEAN-INTERCEPT (EDEL1)....................','{: 8.7E}'.format(vy[1]))
+        print('MEAN......................................','{: 8.7E}'.format(sysmean))
+        print('SECOND MOMENT (EDEL2).....................','{: 8.7E}'.format(vy[2]))
+        print('VARIANCE (VARDL)..........................','{: 8.7E}'.format(vz[2]))
+        print('STANDARD DEVIATION (RTVAR)................','{: 8.7E}'.format(stdev))
+        print('THIRD MOMENT (EDEL3)......................','{: 8.7E}'.format(vy[3]))
+        print('THIRD CENTRAL MOMENT (MU3DL)..............','{: 8.7E}'.format(vz[3]))
+        print('COEFFICIENT OF SKEWNESS SQUARED (BETA1)...','{: 8.7E}'.format(beta1))
+        print('COEFFICIENT OF SKEWNESS (RTBT1)...........','{: 8.7E}'.format(rtbt1))
+        print('FOURTH MOMENT (EDEL4).....................','{: 8.7E}'.format(vy[4]))
+        print('FOURTH CENTRAL MOMENT (MU4DL).............','{: 8.7E}'.format(vz[4]))
+        print('COEFFICIENT OF KURTOSIS (BETA2)...........','{: 8.7E}'.format(beta2))
+        print('*'*80
     
     return [sysmean, vz[2], rtbt1, beta2]
 
@@ -689,8 +689,8 @@ if __name__=='__main__':
     m = soerp_numeric(lc, qc, cp, vm, f0,
         title='EXAMPLE FROM ORIGINAL SOERP USER GUIDE')
     
-    print 'Returned moments:'
-    print '  Mean.................... ', m[0]
-    print '  Variance................ ', m[1]
-    print '  Standardized Skewness... ', m[2]
-    print '  Standardized Kurtosis... ', m[3]
+    print('Returned moments:')
+    print('  Mean.................... {}'.format(m[0]))
+    print('  Variance................ {}'.format(m[1]))
+    print('  Standardized Skewness... {}'.format(m[2]))
+    print('  Standardized Kurtosis... {}'.format(m[3]))

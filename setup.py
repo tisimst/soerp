@@ -6,7 +6,7 @@ def read(fname):
 
 setup(
     name='soerp',
-    version='0.9.4',
+    version='0.9.5',
     author='Abraham Lee',
     description='Second Order Error Propagation',
     author_email='tisimst@gmail.com',
