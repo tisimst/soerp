@@ -5,8 +5,8 @@ Created on Tue Apr  9 15:48:17 2013
 Overview
 --------
 The ``soerp`` package is the python equivalent of N. D. Cox's original SOERP
-code written in Fortran. See the documentation below in UncertainVariable for
-more details and a reference to his work.
+code written in Fortran. See the documentation in UncertainVariable for more 
+details and a reference to his work.
 
 Credits
 -------
@@ -20,7 +20,7 @@ A lot of code here was inspired/evolved from the `uncertainties`_ package by
 import math
 import numpy as np
 try:
-    from ad import ADF,ADV
+    from ad import ADF, ADV
 except ImportError:
     raise
 finally:
@@ -38,7 +38,7 @@ except ImportError:
 else:
     matplotlib_installed = True
 
-__version_info__ = (0, 9, 2)
+__version_info__ = (0, 9, 4)
 __version__ = '.'.join(map(str, __version_info__))
 
 __author__ = 'Abraham Lee'
@@ -55,14 +55,14 @@ __all__ = [
     'Gamma',
     'Beta',
     'LogN',
-    'X2',
+    'Chi2',
     'F',
     'Tri',
     'T',
     'Weib',
     ]
 
-CONSTANT_TYPES = (float,int,complex,long,np.number)
+CONSTANT_TYPES = (float, int, complex, np.number)
 
 def to_uncertain_func(x):
     """
@@ -92,7 +92,7 @@ class UncertainFunction(ADF):
     
     
     """
-#    def __init__(self,*args,**kwargs):
+#    def __init__(self, *args, **kwargs):
 #    
 #        # UncertainFunction doesn't need a value, but it must be defined as a
 #        # place-holder for pickling
@@ -108,7 +108,7 @@ class UncertainFunction(ADF):
         """
         Mean value as a result of an uncertainty calculation
         """
-        mn,vr,sk,kt = self.moments()
+        mn = self.moments(0)
         return mn
     
     @property
@@ -116,7 +116,7 @@ class UncertainFunction(ADF):
         """
         Variance value as a result of an uncertainty calculation
         """
-        mn,vr,sk,kt = self.moments()
+        vr = self.moments(1)
         return vr
         
     @property
@@ -143,7 +143,7 @@ class UncertainFunction(ADF):
         
         where m3 is the third central moment and std is the standard deviation
         """
-        mn,vr,sk,kt = self.moments()
+        sk = self.moments(2)
         return sk
     
     @property
@@ -158,16 +158,16 @@ class UncertainFunction(ADF):
 
         where m4 is the fourth central moment and std is the standard deviation
         """
-        mn,vr,sk,kt = self.moments()
+        kt = self.moments(3)
         return kt
     
-    def moments(self,idx=None):
+    def moments(self, idx=None):
         """
         The first four standard moments of a distribution: mean, variance, and
         standardized skewness and kurtosis coefficients.
         """
-        slc,sqc,scp,var_moments,f0 = self._get_inputs_for_soerp()
-        m = soerp_numeric(slc,sqc,scp,var_moments,f0,silent=True)
+        slc, sqc, scp, var_moments, f0 = self._get_inputs_for_soerp()
+        m = soerp_numeric(slc, sqc, scp, var_moments, f0, silent=True)
         if idx is not None:
             assert (idx<=3) and (idx>=0), 'idx must be 0, 1, 2, or 3 since ' + \
                 'only the first four moments can be calculated'
@@ -175,11 +175,11 @@ class UncertainFunction(ADF):
         else:
             return m
         
-    def _to_general_representation(self,str_func):
+    def _to_general_representation(self, str_func):
         m = self.moments()
-        mn,vr,sk,kt = m[:4]
-        return ('uv({:}, {:}, {:}, {:})'.format(str_func(mn),str_func(vr),
-            str_func(sk),str_func(kt)) if any([vr,sk,kt]) else str_func(mn))
+        mn, vr, sk, kt = m[:4]
+        return ('uv({:}, {:}, {:}, {:})'.format(str_func(mn), str_func(vr),
+            str_func(sk), str_func(kt)) if any([vr, sk, kt]) else str_func(mn))
 
     def __str__(self):
         return self._to_general_representation(str)
@@ -192,7 +192,7 @@ class UncertainFunction(ADF):
         Cleanly show what the distribution moments are:
             - Mean, Variance, Skewness and Kurtosis Coefficients
         """
-        mn,vr,sk,kt = [self.moments(i) for i in [0,1,2,3]]
+        mn, vr, sk, kt = [self.moments(i) for i in [0, 1, 2, 3]]
         s = 'SOERP Uncertain Value:\n'
         s += ' > Mean................... {: }\n'.format(mn)
         s += ' > Variance............... {: }\n'.format(vr)
@@ -218,23 +218,23 @@ class UncertainFunction(ADF):
         # - scp: cross quadratic terms
         slc = np.array([self.d(v)*v.std for v in variables])
         sqc = np.array([0.5*self.d2(v)*v.var for v in variables])
-        scp = np.zeros((nvar,nvar))
+        scp = np.zeros((nvar, nvar))
         for i,v1 in enumerate(variables):
             for j,v2 in enumerate(variables):
                 if hash(v1)!=hash(v2):
 #                if v1._trace!=v2._trace:
-                    scp[i,j] = self.d2c(v1,v2)*v1.std*v2.std
+                    scp[i,j] = self.d2c(v1, v2)*v1.std*v2.std
                 else:
                     scp[i,j] = 0.0
 
         # construct the arrays of standardized moments in since this is what
         # the method of moments calculations require
-        var_moments = np.array([[1,0,1]+list(v._moments[2:]) 
+        var_moments = np.array([[1, 0, 1] + list(v._moments[2:]) 
                                 for v in variables])  
         
         f0 = self.x # from evaluation at input means
         
-        inputs = (slc,sqc,scp,var_moments,f0)
+        inputs = (slc, sqc, scp, var_moments, f0)
         
         return inputs
     
@@ -292,14 +292,14 @@ class UncertainFunction(ADF):
             
         """
         variables = self.d().keys()
-        slc,sqc,scp,var_moments,f0 = self._get_inputs_for_soerp()
+        slc, sqc, scp, var_moments, f0 = self._get_inputs_for_soerp()
         vz = self.moments()
         
         # convert standardized moments back to central moments
         vz[2] = vz[2]*vz[1]**1.5
         vz[3] = vz[3]*vz[1]**2
-        vz = [1]+vz  # the [1] is needed in the method of moment calculations
-        vlc,vqc,vcp = variance_components(slc,sqc,scp,var_moments,vz)
+        vz = [1] + vz  # the [1] is needed in the method of moment calculations
+        vlc, vqc, vcp = variance_components(slc, sqc, scp, var_moments, vz)
         
         vc_lc = {}
         vc_qc = {}
@@ -311,19 +311,19 @@ class UncertainFunction(ADF):
             # second-order terms (pure)
             vc_qc[v1] = vqc[i]
             # second-order terms (cross-product, both orientations returned)
-            for j,v2 in enumerate(variables):
+            for j, v2 in enumerate(variables):
                 if i<j:
-                    vc_cp[(v1,v2)] = vcp[i,j]
-                    vc_cp[(v2,v1)] = vcp[i,j]
+                    vc_cp[(v1, v2)] = vcp[i, j]
+                    vc_cp[(v2, v1)] = vcp[i, j]
         
         if not as_eq_terms:
             """
             I made an executive decision here (I don't know if it's documented
             anywhere). I decided that if I wanted to know the contributions
             separately for each variable, any cross-product contributions could
-            be divided equally between the two variables. Whether or not this is
-            kosher, I'm not sure, but that's what I did. The "pure" terms are
-            also combined together by variable.
+            be divided equally between the two variables. Whether or not this 
+            is kosher, I'm not sure, but that's what I did. The "pure" terms 
+            are also combined together by variable.
             """
             error_wrt_var = dict((v, 0.) for v in variables)
             for i,v1 in enumerate(variables):
@@ -338,24 +338,25 @@ class UncertainFunction(ADF):
             if pprint:
                 print 'COMPOSITE VARIABLE ERROR COMPONENTS'
                 for v in variables:
-                    print '{:} = {:} or {:%}'.format(v,error_wrt_var[v],
+                    print '{:} = {:} or {:%}'.format(v, error_wrt_var[v],
                         np.abs(error_wrt_var[v]/vz[2]))
                 print ' ' # one more for good measure
             else:
                 return error_wrt_var
         else:
             """
-            This section returns the full quadratic contributions as they appear
-            in the approximation, separated by linear terms, pure quadratic 
-            terms and cross-product terms.
+            This section returns the full quadratic contributions as they 
+            appear in the approximation, separated by linear terms, pure 
+            quadratic terms and cross-product terms.
             """
             if pprint:
-                vcont_lc,vcont_qc,vcont_cp = variance_contrib(vlc,vqc,vcp,vz)
+                vcont_lc, vcont_qc, vcont_cp = variance_contrib(vlc, vqc, vcp, 
+                    vz)
                 print '*'*65
                 print 'LINEAR ERROR COMPONENTS:'
                 for i,v1 in enumerate(variables):
                     if vc_lc.has_key(v1):
-                        print '{:} = {:} or {:%}'.format(v1,vc_lc[v1],
+                        print '{:} = {:} or {:%}'.format(v1, vc_lc[v1],
                             vcont_lc[i])
                     else:
                         print '{:} = {:} or {:%}'.format(v1,0.0,0.0)
@@ -371,57 +372,57 @@ class UncertainFunction(ADF):
     
                 print '*'*65
                 print 'CROSS-PRODUCT ERROR COMPONENTS:'
-                for i,v1 in enumerate(variables):
-                    for j,v2 in enumerate(variables):
+                for i, v1 in enumerate(variables):
+                    for j, v2 in enumerate(variables):
                         if i<j:
-                            if vc_cp.has_key((v1,v2)):
-                                print '({:}, {:}) = {:} or {:%}'.format(v1,v2,
-                                    vc_cp[v1,v2],vcont_cp[i,j])
-                            elif vc_cp.has_key((v2,v1)):
-                                print '({:}, {:}) = {:} or {:%}'.format(v2,v1,
-                                    vc_cp[v2,v1],vcont_cp[j,i])
+                            if vc_cp.has_key((v1, v2)):
+                                print '({:}, {:}) = {:} or {:%}'.format(v1, v2,
+                                    vc_cp[v1, v2], vcont_cp[i, j])
+                            elif vc_cp.has_key((v2, v1)):
+                                print '({:}, {:}) = {:} or {:%}'.format(v2, v1,
+                                    vc_cp[v2, v1], vcont_cp[j, i])
                             else:
-                                print '({:}, {:}) = {:} or {:%}'.format(v1,v2,
-                                    0.0,0.0)
+                                print '({:}, {:}) = {:} or {:%}'.format(v1, v2,
+                                    0.0, 0.0)
                 print ' ' # one more for good measure
             else:
-                return (vc_lc,vc_qc,vc_cp)
+                return (vc_lc, vc_qc, vc_cp)
     
-    def __add__(self,val):
-        return _make_UF_compatible_object(ADF.__add__(self,val))
+    def __add__(self, val):
+        return _make_UF_compatible_object(ADF.__add__(self, val))
 
-    def __radd__(self,val):
-        return _make_UF_compatible_object(ADF.__radd__(self,val))
+    def __radd__(self, val):
+        return _make_UF_compatible_object(ADF.__radd__(self, val))
         
-    def __mul__(self,val):
-        return _make_UF_compatible_object(ADF.__mul__(self,val))
+    def __mul__(self, val):
+        return _make_UF_compatible_object(ADF.__mul__(self, val))
 
-    def __rmul__(self,val):
-        return _make_UF_compatible_object(ADF.__rmul__(self,val))
+    def __rmul__(self, val):
+        return _make_UF_compatible_object(ADF.__rmul__(self, val))
         
-    def __sub__(self,val):
-        return _make_UF_compatible_object(ADF.__sub__(self,val))
+    def __sub__(self, val):
+        return _make_UF_compatible_object(ADF.__sub__(self, val))
 
-    def __rsub__(self,val):
-        return _make_UF_compatible_object(ADF.__rsub__(self,val))
+    def __rsub__(self, val):
+        return _make_UF_compatible_object(ADF.__rsub__(self, val))
         
-    def __div__(self,val):
-        return _make_UF_compatible_object(ADF.__div__(self,val))
+    def __div__(self, val):
+        return _make_UF_compatible_object(ADF.__div__(self, val))
 
-    def __rdiv__(self,val):
-        return _make_UF_compatible_object(ADF.__rdiv__(self,val))
+    def __rdiv__(self, val):
+        return _make_UF_compatible_object(ADF.__rdiv__(self, val))
         
-    def __truediv__(self,val):
-        return _make_UF_compatible_object(ADF.__truediv__(self,val))
+    def __truediv__(self, val):
+        return _make_UF_compatible_object(ADF.__truediv__(self, val))
 
-    def __rtruediv__(self,val):
-        return _make_UF_compatible_object(ADF.__rtruediv__(self,val))
+    def __rtruediv__(self, val):
+        return _make_UF_compatible_object(ADF.__rtruediv__(self, val))
         
-    def __pow__(self,val):
-        return _make_UF_compatible_object(ADF.__pow__(self,val))
+    def __pow__(self, val):
+        return _make_UF_compatible_object(ADF.__pow__(self, val))
 
-    def __rpow__(self,val):
-        return _make_UF_compatible_object(ADF.__rpow__(self,val))
+    def __rpow__(self, val):
+        return _make_UF_compatible_object(ADF.__rpow__(self, val))
     
     def __neg__(self):
         return _make_UF_compatible_object(ADF.__neg__(self))
@@ -432,25 +433,25 @@ class UncertainFunction(ADF):
     def __abs__(self):
         return _make_UF_compatible_object(ADF.__abs__(self))
     
-    def __eq__(self,val):
-        diff = self-val
+    def __eq__(self, val):
+        diff = self - val
         return not (diff.mean or diff.var or diff.skew or diff.kurt)
     
-    def __ne__(self,val):
+    def __ne__(self, val):
         return not self==val
     
-    def __lt__(self,val):
-        self,val = map(to_uncertain_func,[self,val])
-        return True if float(self.mean-val.mean) < 0 else False
+    def __lt__(self, val):
+        self, val = map(to_uncertain_func, [self, val])
+        return True if float(self.mean - val.mean) < 0 else False
     
-    def __le__(self,val):
-        return (self==val) or self < val
+    def __le__(self, val):
+        return (self==val) or self<val
     
-    def __gt__(self,val):
+    def __gt__(self, val):
         return not self < val
     
-    def __ge__(self,val):
-        return (self==val) or self > val
+    def __ge__(self, val):
+        return (self==val) or self>val
 
     def __nonzero__(self):
         return self!=0
@@ -495,7 +496,7 @@ class UncertainFunction(ADF):
             setattr(self, name, value)
 
 def _make_UF_compatible_object(tmp):
-    if isinstance(tmp,ADF):
+    if isinstance(tmp, ADF):
         return UncertainFunction(tmp.x, tmp.d(), tmp.d2(), tmp.d2c())
     else: # for scalars, etc.
         return tmp
@@ -743,7 +744,7 @@ class UncertainVariable(UncertainFunction, ADV):
     
     """
     
-    def __init__(self,moments=[],rv=None,tag=None):
+    def __init__(self, moments=[], rv=None, tag=None):
         assert not all([not moments, not rv]), 'Either the moments must be ' + \
             'put in manually or a "rv_continuous" object from the ' + \
             '"scipy.stats" module must be supplied'
@@ -766,7 +767,7 @@ class UncertainVariable(UncertainFunction, ADV):
                 
                 expect = lambda k: rv.dist.expect(lambda x: x**k, args=shape, 
                                                   loc=loc, scale=scale)
-                raw_moments = [expect(k) for k in range(1, 9)]
+                raw_moments = [expect(k) for k in xrange(1, 9)]
                 moments = raw2central(list(raw_moments))
                 for k in range(2, 8):
                     moments[k] = moments[k]/sd**(k + 1)
@@ -776,7 +777,7 @@ class UncertainVariable(UncertainFunction, ADV):
                     "requires a third 'shape' parameter"
                 
                 expect = lambda k: rv.dist.expect(lambda x: x**k)
-                raw_moments = [expect(k) for k in range(1, 9)]            
+                raw_moments = [expect(k) for k in xrange(1, 9)]            
                 moments = raw2central(list(raw_moments))
             
             # update the 1st and second moment values for SOERP calculations
@@ -788,7 +789,7 @@ class UncertainVariable(UncertainFunction, ADV):
         else:
             self._dist = None
             
-        ADV.__init__(self,moments[0],tag=tag)
+        ADV.__init__(self, moments[0], tag=tag)
         self._moments = moments
 
 #    def __hash__(self):
@@ -819,43 +820,43 @@ class UncertainVariable(UncertainFunction, ADV):
     def kurt(self):
         return self.moments(3)
     
-    def moments(self,idx=None):
+    def moments(self, idx=None):
         if idx is not None and idx<len(self._moments):
             return self._moments[idx]
         else:
             return self._moments
         
-    def set_mean(self,mn):
+    def set_mean(self, mn):
         """
         Modify the first moment via the mean
         """
         self._moments[0] = mn
 	
-    def set_std(self,sd):
+    def set_std(self, sd):
         """
         Modify the second moment via the standard deviation
         """
         self._moments[1] = sd**2
         
-    def set_var(self,vr):
+    def set_var(self, vr):
         """
         Modify the second moment via the variance
         """
         self._moments[1] = vr
 	
-    def set_skew(self,sk):
+    def set_skew(self, sk):
         """
         Modify the third moment via the standardized skewness coefficient
         """
         self._moments[2] = sk
 	
-    def set_kurt(self,kt):
+    def set_kurt(self, kt):
         """
         Modify the fourth moment via the standardized kurtosis coefficient
         """
         self._moments[3] = kt
 	
-    def set_moments(self,m):
+    def set_moments(self, m):
         """
         Modify the first eight moments of the UncertainVariable's distribution
         """
@@ -877,10 +878,10 @@ class UncertainVariable(UncertainFunction, ADV):
                 else:
                     low = min(vals)
                     high = max(vals)
-                vals = np.linspace(low,high,500)
-                plt.plot(vals,self._dist.pdf(vals),**kwargs)
-                plt.title(repr(self))
-                plt.xlim(low-(high-low)*0.1,high+(high-low)*0.1)
+                vals = np.linspace(low, high, 500)
+                plt.plot(vals, self._dist.pdf(vals), **kwargs)
+                #plt.title(repr(self))
+                plt.xlim(low - (high - low)*0.1, high + (high - low)*0.1)
                 plt.show()
             else:
                 raise NotImplemented("Cannot determine a distribution's " + \
@@ -928,26 +929,16 @@ def U(a, b, tag=None):
 
 ###############################################################################
 
-def Exp(lamda, mu=None, tag=None):
+def Exp(lamda, tag=None):
     """
     An Exponential random variate
     
     Parameters
     ----------
     lamda : scalar
-        The inverse scale (as shown on Wikipedia). 
-    
-    Optional
-    --------
-    mu : scalar
-        The mean value of the distribution (must be positive and non-zero). If 
-        this is given, ``lamda`` is ignored. (FYI: mu = 1/lamda.)
+        The inverse scale (as shown on Wikipedia), FYI: mu = 1/lamda.
     """
-    if mu is not None:
-        assert mu>0, 'Mean must be positive and not zero'
-        return uv(ss.expon(scale=mu), tag=tag)
-    else:
-        return uv(rv=ss.expon(scale=1./lamda), tag=tag)
+    return uv(rv=ss.expon(scale=1./lamda), tag=tag)
 
 ###############################################################################
 
@@ -1006,13 +997,13 @@ def LogN(mu, sigma, tag=None):
 
 ###############################################################################
 
-def X2(k, tag=None):
+def Chi2(df, tag=None):
     """
     A Chi-Squared random variate
     
     Parameters
     ----------
-    k : int
+    df : int
         The degrees of freedom of the distribution (must be greater than one)
     """
     assert isinstance(df, int) and df>1, 'DF must be an int greater than 1'
@@ -1031,8 +1022,8 @@ def F(d1, d2, tag=None):
     d2 : int
         Denominator degrees of freedom
     """
-    assert isinstance(d1, int) and d1>1, 'DFN must be an int greater than 1'
-    assert isinstance(d2, int) and d2>1, 'DFD must be an int greater than 1'
+    assert isinstance(d1, int) and d1>1, 'd1 must be an int greater than 1'
+    assert isinstance(d2, int) and d2>1, 'd2 must be an int greater than 1'
     return uv(rv=ss.f(d1, d2), tag=tag)
 
 ###############################################################################
@@ -1064,7 +1055,7 @@ def T(v, tag=None):
     v : int
         The degrees of freedom of the distribution (must be greater than one)
     """
-    assert isinstance(v, int) and v>1, 'DF must be an int greater than 1'
+    assert isinstance(v, int) and v>1, 'v must be an int greater than 1'
     return uv(rv=ss.t(v), tag=tag)
 
 ###############################################################################
@@ -1090,14 +1081,14 @@ def raw2central(v):
     def nci(n,i):
         return math.factorial(n)/(math.factorial(i)*math.factorial(n-i))
     
-    v = [1]+v
+    v = [1] + v
     central_moments = []
-    for k in range(len(v)):
+    for k in xrange(len(v)):
         val = 0.0
         
         # use the recursion definition to transform
-        for j in range(k+1):
-            val += (-1)**j*nci(k,j)*v[k-j]*v[1]**j
+        for j in xrange(k + 1):
+            val += (-1)**j*nci(k,j)*v[k - j]*v[1]**j
         central_moments.append(val)
     
     return central_moments[1:]
@@ -1120,22 +1111,22 @@ def covariance_matrix(nums_with_uncert):
     Example
     -------
     
-        >>> x = uv([1,0.01,0,3,0,15,0,105])
-        >>> y = uv([10,0.01,0,3,0,15,0,105])
-        >>> z = x+2*y
-        >>> covariance_matrix([x,y,z])
+        >>> x = N(1, 0.1)
+        >>> y = N(10, 0.1)
+        >>> z = x + 2*y
+        >>> covariance_matrix([x, y, z])
         [[ 0.01  0.    0.01]
          [ 0.    0.01  0.02]
          [ 0.01  0.02  0.05]]
          
     """
-    ufuncs = map(to_uncertain_func,nums_with_uncert)
+    ufuncs = map(to_uncertain_func, nums_with_uncert)
     cov_matrix = []
     for (i1, expr1) in enumerate(ufuncs):
         derivatives1 = expr1._lc  # Optimization
         vars1 = set(derivatives1)
         coefs_expr1 = []
-        for (i2, expr2) in enumerate(ufuncs[:i1+1]):
+        for (i2, expr2) in enumerate(ufuncs[:i1 + 1]):
             derivatives2 = expr2._lc  # Optimization
             coef = 0.
             for v in vars1.intersection(derivatives2):
@@ -1148,7 +1139,7 @@ def covariance_matrix(nums_with_uncert):
     # We symmetrize the matrix:
     for (i, covariance_coefs) in enumerate(cov_matrix):
         covariance_coefs.extend(cov_matrix[j][i]
-                                for j in range(i+1, len(cov_matrix)))
+                                for j in xrange(i + 1, len(cov_matrix)))
 
     return cov_matrix
 
@@ -1170,16 +1161,16 @@ def correlation_matrix(nums_with_uncert):
     Example
     -------
     
-        >>> x = uv([1,0.01,0,3,0,15,0,105])
-        >>> y = uv([10,0.01,0,3,0,15,0,105])
-        >>> z = x+2*y
-        >>> correlation_matrix([x,y,z])
+        >>> x = N(1, 0.1)
+        >>> y = N(10, 0.1)
+        >>> z = x + 2*y
+        >>> correlation_matrix([x, y, z])
         [[ 1.          0.          0.4472136 ]
          [ 0.          1.          0.89442719]
          [ 0.4472136   0.89442719  1.        ]]        
 
     """
-    ufuncs = map(to_uncertain_func,nums_with_uncert)
+    ufuncs = map(to_uncertain_func, nums_with_uncert)
     cov_matrix = covariance_matrix(ufuncs)
     corr_matrix = []
     for (i1, expr1) in enumerate(ufuncs):
