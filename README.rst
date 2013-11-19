@@ -27,9 +27,6 @@ Required Packages
 
 - ad_ : For first- and second-order automatic differentiation (install this first).
 
-Suggested Packages
-==================
-
 - NumPy_ : Numeric Python
 
 - SciPy_ : Scientific Python (the nice distribution constructors require this)
@@ -187,7 +184,7 @@ Main Features
 
    - ``LogN(mu, sigma)`` : `Log-normal distribution`_
 
-   - ``X2(k)`` : `Chi-squared distribution`_
+   - ``Chi2(k)`` : `Chi-squared distribution`_
 
    - ``F(d1, d2)`` : `F-distribution`_
 

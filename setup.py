@@ -6,9 +6,9 @@ def read(fname):
 
 setup(
     name='soerp',
-    version='0.9.3',
+    version='0.9.4',
     author='Abraham Lee',
-    description='Second Order ERror Propagation',
+    description='Second Order Error Propagation',
     author_email='tisimst@gmail.com',
     url='https://github.com/tisimst/soerp',
     license='BSD License',
@@ -19,6 +19,9 @@ setup(
         ],
     install_requires=[
         'ad', 
+        'numpy',
+        'scipy',
+        'matplotlib',
         ],
     keywords=[
         'uncertainty analysis', 
