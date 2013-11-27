@@ -26,9 +26,9 @@ except ImportError:
 finally:
     pass
 
-from method_of_moments import soerp_numeric
-from method_of_moments import variance_components
-from method_of_moments import variance_contrib
+from .method_of_moments import soerp_numeric
+from .method_of_moments import variance_components
+from .method_of_moments import variance_contrib
 import scipy.stats as ss
 
 try:
@@ -38,7 +38,7 @@ except ImportError:
 else:
     matplotlib_installed = True
 
-__version_info__ = (0, 9, 5)
+__version_info__ = (0, 9, 6)
 __version__ = '.'.join(list(map(str, __version_info__)))
 
 __author__ = 'Abraham Lee'
@@ -98,6 +98,9 @@ class UncertainFunction(ADF):
 #        # place-holder for pickling
 #        self._hash = None
 
+    def __hash__(self):
+        return id(self)
+        
     _dist = None
     _moments = None
     
@@ -754,14 +757,9 @@ class UncertainVariable(UncertainFunction, ADV):
         ADV.__init__(self, moments[0], tag=tag)
         self._moments = moments
 
-#    def __hash__(self):
-#        if hasattr(self,'_trace'):
-#            print 'attribute _trace exists:',self._trace
-#            return self._trace
-#        else:
-#            print 'attribute _trace does not exist'
-#            return id(self)
-        
+    def __hash__(self):
+        return id(self)
+                
     @property
     def mean(self):
         return self.moments(0)

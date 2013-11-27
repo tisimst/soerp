@@ -671,7 +671,7 @@ def soerp_numeric(slc, sqc, scp, var_moments, func0, title=None, debug=False,
         print('FOURTH MOMENT (EDEL4).....................','{: 8.7E}'.format(vy[4]))
         print('FOURTH CENTRAL MOMENT (MU4DL).............','{: 8.7E}'.format(vz[4]))
         print('COEFFICIENT OF KURTOSIS (BETA2)...........','{: 8.7E}'.format(beta2))
-        print('*'*80
+        print('*'*80)
     
     return [sysmean, vz[2], rtbt1, beta2]
 
