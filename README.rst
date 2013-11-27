@@ -202,7 +202,8 @@ Main Features
 Installation
 ============
 
-**Make sure you install the** `ad`_ **package first!**
+**Make sure you install the** `ad`_ **package first!** (If you use options 
+3 or 4 below, this should be done automatically.)
 
 You have several easy, convenient options to install the ``soerp`` package 
 (administrative privileges may be required)
@@ -216,31 +217,31 @@ You have several easy, convenient options to install the ``soerp`` package
    
 3. If ``setuptools`` is installed, run::
 
-    $ easy_install --upgrade soerp
+    $ [sudo] easy_install [--upgrade] soerp
    
 4. If ``pip`` is installed, run::
 
-    $ pip install --upgrade soerp
-
-Python 3
---------
-
-To use this package with Python 3.x, you will need to run the ``2to3`` 
-conversion tool at the command-line using the following syntax while in 
-the unzipped ``soerp`` directory::
-
-    $ 2to3 -w -f all *.py
+    $ [sudo] pip install [--upgrade] soerp
     
-This should take care of the main changes required. Then, run
-``python3 setup.py install``. If bugs continue to pop up,
-please email the author.
-    
+Uninstallation
+==============
+
+To remove the package, there are really two good ways to do this:
+
+1. Go to the folder ``site-packages`` or ``dist-packages`` and simply delete
+   the folder ``soerp`` and ``soerp-XYZ-egg-info``.
+
+2. If ``pip`` is installed, run::
+
+    $ [sudo] pip uninstall soerp
+
 See Also
 ========
 
 - uncertainties_ : First-order error propagation
 
-- mcerp_ : Real-time latin-hypercube sampling-based Monte Carlo error propagation
+- mcerp_ : Real-time latin-hypercube sampling-based Monte Carlo error 
+  propagation
 
 Contact
 =======
