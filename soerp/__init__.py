@@ -732,7 +732,7 @@ class UncertainVariable(UncertainFunction, ADV):
                 
                 expect = lambda k: rv.dist.expect(lambda x: x**k, args=shape, 
                                                   loc=loc, scale=scale)
-                raw_moments = [expect(k) for k in xrange(1, 9)]
+                raw_moments = [expect(k) for k in range(1, 9)]
                 moments = raw2central(list(raw_moments))
                 for k in range(2, 8):
                     moments[k] = moments[k]/sd**(k + 1)
@@ -742,7 +742,7 @@ class UncertainVariable(UncertainFunction, ADV):
                     "requires a third 'shape' parameter"
                 
                 expect = lambda k: rv.dist.expect(lambda x: x**k)
-                raw_moments = [expect(k) for k in xrange(1, 9)]            
+                raw_moments = [expect(k) for k in range(1, 9)]            
                 moments = raw2central(list(raw_moments))
             
             # update the 1st and second moment values for SOERP calculations
@@ -1043,11 +1043,11 @@ def raw2central(v):
     
     v = [1] + v
     central_moments = []
-    for k in xrange(len(v)):
+    for k in range(len(v)):
         val = 0.0
         
         # use the recursion definition to transform
-        for j in xrange(k + 1):
+        for j in range(k + 1):
             val += (-1)**j*nci(k,j)*v[k - j]*v[1]**j
         central_moments.append(val)
     
@@ -1099,7 +1099,7 @@ def covariance_matrix(nums_with_uncert):
     # We symmetrize the matrix:
     for (i, covariance_coefs) in enumerate(cov_matrix):
         covariance_coefs.extend(cov_matrix[j][i]
-                                for j in xrange(i + 1, len(cov_matrix)))
+                                for j in range(i + 1, len(cov_matrix)))
 
     return cov_matrix
 
